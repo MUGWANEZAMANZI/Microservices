@@ -5,12 +5,6 @@
 /order-service/target
 /restaurant-service/target
 
-*Dockerfile*
-*dockerfile*
-
-# Ignore Docker Compose files
-*docker-compose*
-*compose.y*ml
 
 # Ignore .dockerignore files
 .dockerignore
