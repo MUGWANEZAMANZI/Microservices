@@ -7,27 +7,29 @@ spring:
 
   cloud:
     gateway:
-      routes:
+      server:
+        webmvc:
+          routes:
 
-        - id: customer-service
-          uri: lb://customer-service
-          predicates:
-            - Path=/api/customers/**
+            - id: customer-service
+              uri: lb://customer-service
+              predicates:
+                - Path=/api/customers,/api/customers/**
 
-        - id: restaurant-service
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/restaurants/**
+            - id: restaurant-service
+              uri: lb://restaurant-service
+              predicates:
+                - Path=/api/restaurants,/api/restaurants/**
 
-        - id: order-service
-          uri: lb://order-service
-          predicates:
-            - Path=/api/orders/**
+            - id: order-service
+              uri: lb://order-service
+              predicates:
+                - Path=/api/orders,/api/orders/**
 
-        - id: delivery-service
-          uri: lb://delivery-service
-          predicates:
-            - Path=/api/deliveries/**
+            - id: delivery-service
+              uri: lb://delivery-service
+              predicates:
+                - Path=/api/deliveries,/api/deliveries/**
 
 eureka:
   client:

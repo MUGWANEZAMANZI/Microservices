@@ -1,27 +1,115 @@
-To run this project, you need to have Docker installed on your machine. Each microservice has its own Dockerfile that specifies 
-how to build the Docker image for that service.
+# Food Delivery Microservices
 
-Run the following commands in your terminal to build and run the Docker containers for each microservice:
-1. Navigate to the root directory of each microservice (e.g., APIGATEWAY, delivery-service, ServiceDiscovery, restaurant-service, order-service, customer-service).
-2. Build the Docker image for each service using the following command:
-3. 
-   ```bash
-   docker build -t <service-name> .
-   ```
-   Replace `<service-name>` with the name of the microservice (e.g., apigateway, delivery-service, etc.).
-4. After building the images, you can run the containers using the following command:
-   ```bash
-   docker run -p <host-port>:<container-port> <service-name>
-   ```
-   Replace `<host-port>` with the port you want to use on your machine, `<container-port>` with the port exposed by the service (as specified in the Dockerfile), and `<service-name>` with the name of the microservice.
-5. For example, to run the APIGATEWAY service, you would use:
-   ```bash
-   docker run -p 8080:8080 apigateway
-6. Repeat the above steps for each microservice, making sure to use different host ports for each service to avoid conflicts.
-   
-To run the whole system together, you can use Docker Compose to define and run multi-container Docker applications. Create a `docker-compose.yml` file in the root directory of your project and define the services, networks, and volumes as needed. Then, run the following command to start all services:
-```bash
-docker-compose up
+A Spring Boot microservices project with service discovery, API gateway, and four domain services.
+
+## Architecture
+
+```
+         Client
+           |
+     +-----------+
+     | API Gateway| :8080
+     +-----------+
+           |
+  ┌────────┼────────┬────────┐
+  ▼        ▼        ▼        ▼
+Customer  Restaurant  Order  Delivery
+ :8081     :8082     :8083   :8084
+  └────────┴────────┴────────┘
+                |
+        +--------------+
+        |   PostgreSQL  |
+        +--------------+
+                |
+        +--------------+
+        |    Eureka     | :8761
+        | (Discovery)   |
+        +--------------+
 ```
 
-Thank you!
+```mermaid
+graph TD
+    Client --> Gateway[API Gateway :8080]
+    Gateway --> CS[customer-service :8081]
+    Gateway --> RS[restaurant-service :8082]
+    Gateway --> OS[order-service :8083]
+    Gateway --> DS[delivery-service :8084]
+    CS --> DB[(PostgreSQL)]
+    RS --> DB
+    OS --> DB
+    DS --> DB
+    CS --> Eureka[Eureka :8761]
+    RS --> Eureka
+    OS --> Eureka
+    DS --> Eureka
+    Gateway --> Eureka
+```
+
+## Services
+
+| Service | Port | Description |
+|---|---|---|
+| API Gateway | 8080 | Single entry point, routes all requests |
+| Service Discovery | 8761 | Eureka server |
+| Customer Service | 8081 | Manage customers |
+| Restaurant Service | 8082 | Manage restaurants |
+| Order Service | 8083 | Manage orders |
+| Delivery Service | 8084 | Manage deliveries |
+
+## API Endpoints (via Gateway on :8080)
+
+### Customers
+```
+POST   /api/customers
+GET    /api/customers
+GET    /api/customers/{id}
+DELETE /api/customers/{id}
+```
+
+### Restaurants
+```
+POST   /api/restaurants
+GET    /api/restaurants
+GET    /api/restaurants/{id}
+DELETE /api/restaurants/{id}
+```
+
+### Orders
+```
+POST   /api/orders
+GET    /api/orders
+GET    /api/orders/{id}
+DELETE /api/orders/{id}
+```
+
+### Deliveries
+```
+POST   /api/deliveries
+GET    /api/deliveries
+GET    /api/deliveries/{id}
+DELETE /api/deliveries/{id}
+```
+
+## Running Locally
+
+```bash
+# Build all services
+mvn clean package -DskipTests
+
+# Start all containers
+docker compose up --build -d
+
+# View logs
+docker compose logs -f
+```
+
+## Example Request Flow
+
+```
+POST http://localhost:8080/api/customers
+{
+  "name": "Alice",
+  "email": "alice@example.com",
+  "phone": "0781234567"
+}
+```
