@@ -2,25 +2,30 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: food-delivery-postgres
-
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
-
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   discovery-service:
     build: ./service-discovery
     container_name: food-delivery-discovery-service
     ports:
       - "8761:8761"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -29,33 +34,58 @@ services:
       - "8080:8080"
     depends_on:
       - discovery-service
+
   customer-service:
     build:
       context: ./customer-service
     container_name: food-delivery-customer-service
     ports:
       - "8081:8081"
+    restart: on-failure
     depends_on:
-      - discovery-service
-      - postgres
+      discovery-service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
   restaurant-service:
     build:
-        context: ./restaurant-service
+      context: ./restaurant-service
     container_name: food-delivery-restaurant-service
     ports:
-        - "8082:8082"
+      - "8082:8082"
+    restart: on-failure
     depends_on:
-        - discovery-service
-        - postgres
+      discovery-service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
   order-service:
     build:
       context: ./order-service
-    container_name: food-delivery-restaurant-service
+    container_name: food-delivery-order-service
     ports:
       - "8083:8083"
+    restart: on-failure
     depends_on:
-      - discovery-service
-      - postgres
+      discovery-service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  delivery-service:
+    build:
+      context: ./delivery-service
+    container_name: food-delivery-delivery-service
+    ports:
+      - "8084:8084"
+    restart: on-failure
+    depends_on:
+      discovery-service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
