@@ -2,6 +2,8 @@ package com.orderservice.service;
 
 import com.orderservice.client.CustomerClient;
 import com.orderservice.client.RestaurantClient;
+import com.orderservice.dto.OrderCreatedEvent;
+import com.orderservice.publisher.OrderEventPublisher;
 import com.orderservice.model.Order;
 import com.orderservice.repository.OrderRepository;
 import org.springframework.stereotype.Service;
@@ -13,20 +15,31 @@ public class OrderService {
     private final OrderRepository repository;
     private final CustomerClient customerClient;
     private final RestaurantClient restaurantClient;
+    private final OrderEventPublisher publisher;
+
 
     public OrderService(OrderRepository repository,
                         CustomerClient customerClient,
-                        RestaurantClient restaurantClient) {
+                        RestaurantClient restaurantClient,
+                        OrderEventPublisher publisher) {
         this.repository = repository;
         this.customerClient = customerClient;
         this.restaurantClient = restaurantClient;
+        this.publisher = publisher;
     }
 
     public Order placeOrder(Order order) {
         customerClient.getCustomer(order.getCustomerId());
         restaurantClient.getRestaurant(order.getRestaurantId());
         order.setStatus("PENDING");
-        return repository.save(order);
+        Order saved = repository.save(order);
+        publisher.publish(new OrderCreatedEvent(
+                saved.getId().toString(),
+                saved.getCustomerId(),
+                saved.getRestaurantId(),
+                saved.getStatus()
+        ));
+        return saved;
     }
 
     public Order create(Order order) {
