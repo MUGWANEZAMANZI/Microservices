@@ -103,7 +103,7 @@ Content-Type: application/json
 {
     "customerId": 1,
     "restaurantId": 1,
-    "totalAmount": 25.99
+    "totalAmount": 1000.99
 }
 
 ###
