@@ -3,14 +3,15 @@ services:
     image: postgres:16-alpine
     container_name: food-delivery-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -22,9 +23,16 @@ services:
     container_name: food-delivery-discovery-service
     ports:
       - "8761:8761"
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8761/eureka/apps || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   api-gateway:
     build:
@@ -32,8 +40,10 @@ services:
     container_name: food-delivery-api-gateway
     ports:
       - "8080:8080"
+    restart: unless-stopped
     depends_on:
-      - discovery-service
+      discovery-service:
+        condition: service_healthy
 
   customer-service:
     build:
@@ -41,10 +51,14 @@ services:
     container_name: food-delivery-customer-service
     ports:
       - "8081:8081"
-    restart: on-failure
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/customer_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
     depends_on:
       discovery-service:
-        condition: service_started
+        condition: service_healthy
       postgres:
         condition: service_healthy
 
@@ -54,10 +68,14 @@ services:
     container_name: food-delivery-restaurant-service
     ports:
       - "8082:8082"
-    restart: on-failure
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/restaurant_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
     depends_on:
       discovery-service:
-        condition: service_started
+        condition: service_healthy
       postgres:
         condition: service_healthy
 
@@ -67,10 +85,14 @@ services:
     container_name: food-delivery-order-service
     ports:
       - "8083:8083"
-    restart: on-failure
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/order_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
     depends_on:
       discovery-service:
-        condition: service_started
+        condition: service_healthy
       postgres:
         condition: service_healthy
 
@@ -80,10 +102,14 @@ services:
     container_name: food-delivery-delivery-service
     ports:
       - "8084:8084"
-    restart: on-failure
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/delivery_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
     depends_on:
       discovery-service:
-        condition: service_started
+        condition: service_healthy
       postgres:
         condition: service_healthy
 

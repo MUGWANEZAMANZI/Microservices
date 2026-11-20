@@ -1,0 +1,98 @@
+### Variables
+@gateway = http://localhost:8080
+
+### ─── CUSTOMERS ─────────────────────────────────────
+
+### Create customer
+POST {{gateway}}/api/customers
+Content-Type: application/json
+
+{
+  "name": "Alice Uwase",
+  "email": "alice@example.com",
+  "phone": "0781234567"
+}
+
+### Get all customers
+GET {{gateway}}/api/customers
+
+### Get customer by ID
+GET {{gateway}}/api/customers/1
+
+### Delete customer
+DELETE {{gateway}}/api/customers/1
+
+### ─── RESTAURANTS ────────────────────────────────────
+
+### Create restaurant
+POST {{gateway}}/api/restaurants
+Content-Type: application/json
+
+{
+  "name": "Pizza Palace",
+  "address": "KN 5 Ave, Kigali",
+  "cuisineType": "Italian"
+}
+
+### Get all restaurants
+GET {{gateway}}/api/restaurants
+
+### Get restaurant by ID
+GET {{gateway}}/api/restaurants/1
+
+### Delete restaurant
+DELETE {{gateway}}/api/restaurants/1
+
+### ─── ORDERS ─────────────────────────────────────────
+
+### Create order
+POST {{gateway}}/api/orders
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "restaurantId": 1,
+  "totalAmount": 25.99
+}
+
+### Get all orders
+GET {{gateway}}/api/orders
+
+### Get order by ID
+GET {{gateway}}/api/orders/1
+
+### Delete order
+DELETE {{gateway}}/api/orders/1
+
+### ─── DELIVERIES ──────────────────────────────────────
+
+### Create delivery
+POST {{gateway}}/api/deliveries
+Content-Type: application/json
+
+{
+  "orderId": 1,
+  "customerId": 1,
+  "deliveryAddress": "KG 11 Ave, Kigali"
+}
+
+### Get all deliveries
+GET {{gateway}}/api/deliveries
+
+### Get delivery by ID
+GET {{gateway}}/api/deliveries/1
+
+### Delete delivery
+DELETE {{gateway}}/api/deliveries/1
+
+
+###
+POST http://localhost:8081/api/customers
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "email": "alice@example.com",
+  "phone": "0781234567"
+}
+

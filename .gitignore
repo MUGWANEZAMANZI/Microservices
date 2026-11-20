@@ -1,10 +1,8 @@
-.idea
-/api-gateway/target
-/customer-service/target
-/delivery-service/target
-/order-service/target
-/restaurant-service/target
-
-
-# Ignore .dockerignore files
-.dockerignore
+target/
+.idea/
+*.iml
+*.class
+logs/
+.env
+*.log
+.DS_Store
