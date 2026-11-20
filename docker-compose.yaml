@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: food-delivery-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  discovery-service:
+    build: ./service-discovery
+    container_name: food-delivery-discovery-service
+    ports:
+      - "8761:8761"
+    depends_on:
+      - postgres
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: food-delivery-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-service
+  customer-service:
+    build:
+      context: ./customer-service
+    container_name: food-delivery-customer-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - discovery-service
+      - postgres
+  restaurant-service:
+    build:
+        context: ./restaurant-service
+    container_name: food-delivery-restaurant-service
+    ports:
+        - "8082:8082"
+    depends_on:
+        - discovery-service
+        - postgres
+  order-service:
+    build:
+      context: ./order-service
+    container_name: food-delivery-restaurant-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - discovery-service
+      - postgres
+
+volumes:
+  postgres_data:

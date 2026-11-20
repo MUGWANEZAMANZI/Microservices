@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: delivery-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/delivery_db
+    username: postgres
+    password: postgres
+server:
+  port: 8084
+
+eureka:
+    client:
+        service-url:
+            defaultZone: http://localhost:8761/eureka
