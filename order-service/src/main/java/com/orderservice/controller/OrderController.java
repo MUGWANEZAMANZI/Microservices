@@ -16,6 +16,10 @@ public class OrderController {
         this.service = service;
     }
 
+    @PostMapping("/place")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Order placeOrder(@RequestBody Order order) { return service.placeOrder(order); }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Order create(@RequestBody Order order) { return service.create(order); }

@@ -96,3 +96,16 @@ Content-Type: application/json
   "phone": "0781234567"
 }
 
+###
+POST http://localhost:8080/api/orders/place
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "restaurantId": 1,
+    "totalAmount": 1000.99
+}
+
+###
+GET localhost:8080/api/deliveries
+

@@ -17,6 +17,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: food-delivery-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: unless-stopped
 
   discovery-service:
     build: ./service-discovery

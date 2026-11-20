@@ -21,6 +21,11 @@ spring:
               predicates:
                 - Path=/api/restaurants,/api/restaurants/**
 
+            - id: restaurant-service-menu
+              uri: lb://restaurant-service
+              predicates:
+                - Path=/api/menu-items,/api/menu-items/**
+
             - id: order-service
               uri: lb://order-service
               predicates:
