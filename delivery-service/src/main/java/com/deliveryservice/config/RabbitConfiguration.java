@@ -10,10 +10,16 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfiguration {
 
     public static final String ORDER_QUEUE = "order.created.queue";
+    public static final String ORDER_CANCELLED_QUEUE = "order.cancel";
 
     @Bean
     public Queue orderQueue() {
         return new Queue(ORDER_QUEUE);
+    }
+
+    @Bean
+    public Queue orderCancelledQueue() {
+        return new Queue(ORDER_CANCELLED_QUEUE);
     }
 
     @Bean
