@@ -20,6 +20,31 @@ spring:
     port: 5672
     username: guest
     assword: guest
+  cloud:
+    openfeign:
+      circuitbreaker:
+          enabled: true
+  web:
+    error:
+      include-message: always
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-size: 5
+        sliding-window-type: count_based
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+
 
 
 eureka:

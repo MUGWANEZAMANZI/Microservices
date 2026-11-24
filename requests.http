@@ -1,6 +1,31 @@
 ### Variables
 @gateway = http://localhost:8080
 
+### ─── AUTH ───────────────────────────────────────────
+
+### Register new customer account
+POST {{gateway}}/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Alice Uwase",
+  "email": "alice@example.com",
+  "phone": "0781234567",
+  "password": "secret123"
+}
+
+### Login (copy the token from the response into @token below)
+POST {{gateway}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "secret123"
+}
+
+### Set token after login (paste your token here)
+@token = paste_your_token_here
+
 ### ─── CUSTOMERS ─────────────────────────────────────
 
 ### Create customer
@@ -64,6 +89,71 @@ GET {{gateway}}/api/orders/1
 ### Delete order
 DELETE {{gateway}}/api/orders/1
 
+### ─── CIRCUIT BREAKER TESTS ─────────────────────────
+# HOW TO TEST:
+# 1. Run the happy-path requests below (services UP) — expect 200/201
+# 2. Stop customer-service:  docker stop food-delivery-customer-service
+# 3. Run the "service DOWN" requests — expect fallback error message, NOT a timeout
+# 4. Check circuit state in actuator (requests below)
+# 5. Restart:  docker start food-delivery-customer-service
+
+### [HAPPY PATH] Place order — customer-service and restaurant-service both UP
+# Expected: 201 with order object and delivery auto-created via RabbitMQ
+POST {{gateway}}/api/orders/place
+Content-Type: application/json
+
+{
+  "customerId": 5,
+  "restaurantId": 2,
+  "totalAmount": 25.99
+}
+
+###
+
+### [CIRCUIT BREAKER] Place order — stop customer-service first
+# docker stop food-delivery-customer-service
+# Expected: 500 with "Customer service is unavailable" message (NOT a 30s timeout)
+POST {{gateway}}/api/orders/place
+Content-Type: application/json
+
+{
+  "customerId": 5,
+  "restaurantId": 2,
+  "totalAmount": 25.99
+}
+
+###
+
+### [CIRCUIT BREAKER] Place order — stop restaurant-service first
+# docker stop food-delivery-restaurant-service
+# Expected: 500 with "Restaurant service is unavailable" message
+POST {{gateway}}/api/orders/place
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "restaurantId": 1,
+  "totalAmount": 25.99
+}
+
+###
+
+### Check circuit breaker state — order-service (customer-service circuit)
+# Expected: shows CLOSED (normal), OPEN (tripped), or HALF_OPEN (recovering)
+GET http://localhost:8083/actuator/circuitbreakers
+
+###
+
+### Check circuit breaker state — delivery-service (order-service circuit)
+GET http://localhost:8084/actuator/circuitbreakers
+
+###
+
+### Check circuit breaker health — order-service
+GET http://localhost:8083/actuator/health
+
+###
+
 ### ─── DELIVERIES ──────────────────────────────────────
 
 ### Create delivery
@@ -108,4 +198,15 @@ Content-Type: application/json
 
 ###
 GET localhost:8080/api/deliveries
+
+### Regsiter a customer
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Alice Uwase",
+  "email": "mmaudace@gmail.com",
+  "phone": "0781234567",
+  "password": "secret123"
+}
 
