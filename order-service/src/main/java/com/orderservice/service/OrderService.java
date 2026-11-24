@@ -2,7 +2,9 @@ package com.orderservice.service;
 
 import com.orderservice.client.CustomerClient;
 import com.orderservice.client.RestaurantClient;
+import com.orderservice.dto.CustomerResponse;
 import com.orderservice.dto.OrderCreatedEvent;
+import com.orderservice.dto.RestaurantResponse;
 import com.orderservice.publisher.OrderEventPublisher;
 import com.orderservice.model.Order;
 import com.orderservice.repository.OrderRepository;
@@ -29,8 +31,18 @@ public class OrderService {
     }
 
     public Order placeOrder(Order order) {
-        customerClient.getCustomer(order.getCustomerId());
-        restaurantClient.getRestaurant(order.getRestaurantId());
+
+
+        CustomerResponse cust = customerClient.getCustomer(order.getCustomerId());
+        if(cust == null){
+            throw new RuntimeException("Customer service is unavailable. Please try again later.");
+        }
+        // Check if the restaurant exists using the RestaurantClient
+        RestaurantResponse res = restaurantClient.getRestaurant(order.getRestaurantId());
+
+        if (res == null){
+            throw new RuntimeException("Restaurant service is unavailable. Please try again later.");
+        }
         order.setStatus("PENDING");
         Order saved = repository.save(order);
         publisher.publish(new OrderCreatedEvent(

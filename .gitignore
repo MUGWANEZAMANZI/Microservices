@@ -6,3 +6,5 @@ logs/
 .env
 *.log
 .DS_Store
+**/application.yml
+**/application-*.yml
