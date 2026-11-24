@@ -22,6 +22,13 @@ public class RabbitConfiguration {
         return new Queue(ORDER_CANCELLED_QUEUE);
     }
 
+    public static final String DELIVERY_STATUS_QUEUE = "delivery.status.updated.queue";
+
+    @Bean
+    public Queue deliveryStatusQueue() {
+        return new Queue(DELIVERY_STATUS_QUEUE);
+    }
+
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new JacksonJsonMessageConverter();
